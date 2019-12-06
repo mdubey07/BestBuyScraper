@@ -1,27 +1,19 @@
-import requests, re, csv
+import requests, re
 from bs4 import BeautifulSoup
-from collections import Counter
 from unidecode import unidecode
 import json
 import time
 
 
-list_brands = []
-list_avg_rating = []
-list_num_ratings = []
-
 file_name = 'products.csv'
 fr = open(file_name, 'w')
-csv_headers = 'Product_name, Category, Subcategory, SearchTerm, Rating, Reviews\n'
+csv_headers = 'Product_name, Category, Subcategory, SearchTerm, Rating, Reviews, Product_Url\n'
 fr.write(csv_headers)
 
 front_url = "https://www.bestbuy.com/site/searchpage.jsp?cp="
 middle_url = "&searchType=search&st="
 end_url = "&_dyncharset=UTF-8&id=pcat17071&type=page&sc=Global&nrp=&sp=&qp=&list=n&af=true&iht=y&intl=nosplash&usc=All%20Categories&ks=960&keys=keys"
 agent = {"User-Agent":'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'}
-
-# user_input = parseInput(input("Enter search term please:"))
-# search_term = user_input
 
 
 # Parses user input to correct query string format
@@ -55,6 +47,8 @@ def search_result(search_term, category, subcategory):
                     new_product_indicator = title_container[0].findAll("span", {"class": "new-indicator"})
                     product_name = title_container[0].text
                     product_name = unidecode(product_name)
+                    product_url = title_container[0].find_all('a', href=True)
+                    product_url = 'https://www.bestbuy.com' + product_url[0]['href']
                     if new_product_indicator:
                         print("New Product Found")
                         rating = '0'
@@ -76,7 +70,7 @@ def search_result(search_term, category, subcategory):
                             reviews = 'Product-We can not make reviews'
 
                     fr.write(product_name.replace(',', '|') + ',' + category + ',' + subcategory + ',' + searchname
-                             + ',' + rating + ',' + str(reviews) + '\n')
+                             + ',' + rating + ',' + str(reviews) + ',' + product_url + '\n')
                     # print('Rating = ' + rating + ' and ' + 'Reviews = ' + str(reviews))
 
             else:
@@ -117,6 +111,7 @@ with open('output.json', encoding="utf8") as jsonFile:
         sub_cat = data['subcategory']
         if search_name.lower != 'none':
             print(search_name)
+            # search_name = 'android'
             search_result(search_name, cat, sub_cat)
             print("will iterate after 10 second!")
             # exit(2)
