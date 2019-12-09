@@ -3,22 +3,22 @@ import time
 import re
 import sys
 import scrapy
+
+
 class BestBuySpider(scrapy.Spider):
-    name = "quotes"
+    name = "products"
     front_url = "https://www.bestbuy.com/site/searchpage.jsp?cp="
     middle_url = "&searchType=search&st="
     end_url = "&_dyncharset=UTF-8&id=pcat17071&type=page&sc=Global&nrp=&sp=&qp=&list=n&af=true&iht=y&intl=nosplash&usc=All%20Categories&ks=960&keys=keys"
+
     def start_requests(self):
-        urls = []
         keywords = self.get_keywords()
 
         for k in keywords:
             yield scrapy.Request(url=self.front_url + "1" + self.middle_url + k.name + self.end_url, callback=self.parse,
                                  meta={'category': k.category, 'subcategory': k.sub_category, 'search_term': k.name })
 
-
     def parse(self, response):
-        item = response.meta.get('hero_item')
         for product in response.css('li.sku-item'):
             new_product_indicator = product.css("span.new-indicator::text").get()
             product_name = product.css("h4.sku-header > a::text").get()
@@ -65,14 +65,15 @@ class BestBuySpider(scrapy.Spider):
                 try:
                     if search_name is not None:
                         if search_name.lower != 'none':
-                            keywords.append(keyword(search_name, cat, sub_cat))
+                            keywords.append(Keyword(search_name, cat, sub_cat))
                 except Exception as e:
                     print(e)
                     print("Oops!", sys.exc_info()[0], "occured.")
                     pass
         return keywords
 
-class keyword:
+
+class Keyword:
     def __init__(self, name, category, sub_category):
         self.name = name
         self.category = category
