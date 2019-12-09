@@ -156,8 +156,9 @@ with open('output.json', encoding="utf8") as jsonFile:
             if search_name is not None:
                 if search_name.lower != 'none':
                     print(str(key_count) + " Keyword is " + search_name)
-                    # search_name = 'android'
+                    search_name = 'Ericsson R250s PRO'
                     search_result(search_name, cat, sub_cat)
+                    exit(7)
                     # print("will iterate after 0 second!")
         except Exception as e:
             print(e)
