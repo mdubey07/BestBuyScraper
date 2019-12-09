@@ -6,9 +6,20 @@ from unidecode import unidecode
 import json
 import time
 import sys
+from multiprocessing import pool
+from multiprocessing.dummy import Pool  # This is a thread-based Pool
+from multiprocessing import cpu_count
+import csv
 
 
 remote_url = "www.bestbuy.com"
+p_name = []
+p_cat = []
+p_scat = []
+p_key = []
+p_rating = []
+p_review = []
+p_url = []
 
 
 def is_connected(hostname):
@@ -43,10 +54,11 @@ def parse_input(mystring):
     return mystring.replace(' ', '%20')
 
 
-def search_result(search_term, category, subcategory):
+def search_result(search_term_list):
     page_count = 1
-    searchname = search_term.strip()
-    search_term = parse_input(search_term)
+    str1 = search_term_list[0]
+    searchname = search_term_list[0].strip()
+    search_term = parse_input(searchname)
     url = front_url + str(page_count) + middle_url + search_term + end_url
     # While the next page exists:
     while True:
@@ -89,8 +101,15 @@ def search_result(search_term, category, subcategory):
                                 rating = '0'
                                 reviews = 'Product-We can not make reviews'
 
-                        fr.write(product_name.replace(',', '|') + ',' + category + ',' + subcategory + ',' + searchname
-                                 + ',' + rating + ',' + str(reviews) + ',' + product_url + '\n')
+                        p_name.append(product_name.replace(',', '|'))
+                        p_cat.append(search_term_list[1])
+                        p_scat.append(search_term_list[2])
+                        p_key.append(searchname)
+                        p_rating.append(rating)
+                        p_review.append(str(reviews))
+                        p_url.append(product_url)
+                        # fr.write(product_name.replace(',', '|') + ',' + search_term_list[1] + ',' + search_term_list[2] + ',' + searchname
+                        #          + ',' + rating + ',' + str(reviews) + ',' + product_url + '\n')
                         # print('Rating = ' + rating + ' and ' + 'Reviews = ' + str(reviews))
 
                 else:
@@ -127,6 +146,7 @@ def search_result(search_term, category, subcategory):
             print(ex)
             print("Oops!", sys.exc_info()[0], "occurred.")
             pass
+    return p_name
 
 
 def wnt_process(message):
@@ -145,24 +165,40 @@ def wnt_process(message):
         wnt_process("Self Retrying...")
 
 
-with open('output.json', encoding="utf8") as jsonFile:
-    jsonData = json.load(jsonFile)
-    key_count = 1
-    for data in jsonData:
-        search_name = data['name']
-        cat = data['category']
-        sub_cat = data['subcategory']
-        try:
-            if search_name is not None:
-                if search_name.lower != 'none':
-                    print(str(key_count) + " Keyword is " + search_name)
-                    # search_name = 'android'
-                    search_result(search_name, cat, sub_cat)
-                    # print("will iterate after 0 second!")
-        except Exception as e:
-            print(e)
-            print("Oops!", sys.exc_info()[0], "occured.")
-            pass
-        key_count += 1
+# with open('output.json', encoding="utf8") as jsonFile:
+#     jsonData = json.load(jsonFile)
+#     key_count = 1
+#     # key_parameter = []
+#     for data in jsonData:
+#         search_name = data['name']
+#         cat = data['category']
+#         sub_cat = data['subcategory']
+#         try:
+#             if search_name is not None:
+#                 if search_name.lower != 'none':
+#                     print(str(key_count) + " Keyword is " + search_name)
+#                     # search_name = 'android'
+#                     key_parameter = [search_name, cat, sub_cat]
+#                     p = pool.Pool(10)
+#                     test_result = p.map(search_result, key_parameter)
+#                     p.terminate()
+#                     p.join()
+#                     # search_result(key_parameter)
+#                     # print("will iterate after 0 second!")
+#         except Exception as e:
+#             print(e)
+#             print("Oops1!", sys.exc_info()[0], "occured.")
+#             pass
+#         key_count += 1
+
+
+if __name__ == "__main__":
+    key_parameter = ['android', 'test', 'sub test']
+    pool = Pool(cpu_count() * 2)  # Creates a Pool with cpu_count * 2 threads.
+    results = pool.map(search_result, key_parameter)  # results is a list of all the placeHolder lists returned from each call to crawlToCSV
+    with open("products1.csv", "ab") as f:
+        writeFile = csv.writer(f)
+        for result in results:
+            writeFile.writerow(result)
 
 fr.close()
