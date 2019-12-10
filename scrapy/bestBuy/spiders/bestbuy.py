@@ -15,8 +15,9 @@ class BestBuySpider(scrapy.Spider):
         keywords = self.get_keywords()
 
         for k in keywords:
-            yield scrapy.Request(url=self.front_url + "1" + self.middle_url + k.name + self.end_url, callback=self.parse,
-                                 meta={'category': k.category, 'subcategory': k.sub_category, 'search_term': k.name })
+            yield scrapy.Request(url=self.front_url + "1" + self.middle_url + k.name + self.end_url,
+                                 callback=self.parse,
+                                 meta={'category': k.category, 'subcategory': k.sub_category, 'search_term': k.name})
 
     def parse(self, response):
         for product in response.css('li.sku-item'):
@@ -52,7 +53,9 @@ class BestBuySpider(scrapy.Spider):
         next_page = response.css('div.right-side a.ficon-caret-right::attr(href)').get()
         if next_page is not None:
             next_page = response.urljoin(next_page)
-            yield scrapy.Request(next_page, callback=self.parse)
+            yield scrapy.Request(next_page, callback=self.parse, meta={'category': response.meta.get('category'),
+                                                                       'subcategory': response.meta.get('subcategory'),
+                                                                       'search_term': response.meta.get('search_term')})
 
     def get_keywords(self):
         keywords = []
@@ -68,7 +71,7 @@ class BestBuySpider(scrapy.Spider):
                             keywords.append(Keyword(search_name, cat, sub_cat))
                 except Exception as e:
                     print(e)
-                    print("Oops!", sys.exc_info()[0], "occured.")
+                    print("Oops!", sys.exc_info()[0], "occurred.")
                     pass
         return keywords
 
