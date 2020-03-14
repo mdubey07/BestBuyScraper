@@ -1,3 +1,11 @@
-.idea/*
 venv/*
-Twisted-19.10.0-cp38-cp38-win32.whl
+*.csv
+*.xlsx
+*.json
+.idea/*
+*.jpg
+*.png
+*.yml
+*.pyc
+scrapy/project.egg-info/*
+scrapy/build/*

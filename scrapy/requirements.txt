@@ -1,0 +1,7 @@
+openpyxl==2.5.14
+pyexcel==0.5.15
+pyexcel-io==0.5.20
+pyexcel-xlsx==0.5.7
+pyOpenSSL==19.0.0
+requests==2.22.0
+Twisted==19.7.0
