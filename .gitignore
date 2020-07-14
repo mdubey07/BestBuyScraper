@@ -1,5 +1,6 @@
 venv/*
 *.csv
+*.pdf
 *.xlsx
 *.json
 .idea/*
